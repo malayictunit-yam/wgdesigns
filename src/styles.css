@@ -136,6 +136,11 @@
 @utility animate-float { animation: float-y 6s ease-in-out infinite; }
 @utility animate-marquee { animation: marquee 40s linear infinite; }
 @utility animate-fade-up { animation: fade-up 0.7s ease-out both; }
+@utility animate-hero-zoom { animation: hero-zoom 7s ease-out both; }
+@keyframes hero-zoom {
+  0% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
 @utility shine-gold {
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--gold) 50%, transparent), transparent);
   background-size: 200% 100%;
