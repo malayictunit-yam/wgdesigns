@@ -83,100 +83,115 @@ function Nav() {
   );
 }
 
-/* ------------ Hero ------------ */
+/* ------------ Hero (Full-screen Carousel) ------------ */
 function Hero() {
-  // floating mockups
-  const floats = useMemo(() => projects.filter(p => p.featured).slice(0, 5), []);
-  return (
-    <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 lg:pt-44">
-      <div className="absolute inset-0 bg-grid opacity-[0.35]" />
-      <div className="absolute -left-32 top-20 size-[500px] rounded-full bg-[color:var(--royal)]/25 blur-[160px]" />
-      <div className="absolute -right-24 bottom-0 size-[420px] rounded-full bg-[color:var(--gold)]/15 blur-[160px]" />
+  const slides = useMemo(() => {
+    const wanted = ["amis", "islandbonitas", "apex", "mobilelegends", "onelove", "dentols", "cyclingyellow", "bolaboc"];
+    const picks = wanted.map(id => projects.find(p => p.id === id)).filter(Boolean) as Project[];
+    return picks.length ? picks : projects.slice(0, 6);
+  }, []);
+  const [i, setI] = useState(0);
+  const n = slides.length;
+  const go = (d: number) => setI(v => (v + d + n) % n);
+  const to = (idx: number) => setI(((idx % n) + n) % n);
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:px-12">
+  // autoplay
+  useEffect(() => {
+    const t = setInterval(() => setI(v => (v + 1) % n), 4000);
+    return () => clearInterval(t);
+  }, [n]);
+
+  // touch swipe
+  const [tx, setTx] = useState<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => setTx(e.touches[0].clientX);
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
+    setTx(null);
+  };
+
+  return (
+    <section
+      id="home"
+      className="relative h-screen w-full overflow-hidden"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* slides */}
+      {slides.map((s, idx) => (
+        <div
+          key={s.id}
+          className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${idx === i ? "opacity-100" : "opacity-0"}`}
+          aria-hidden={idx !== i}
+        >
+          <img
+            src={s.image}
+            alt={s.title}
+            className={`size-full object-cover ${idx === i ? "animate-hero-zoom" : ""}`}
+            loading={idx === 0 ? "eager" : "lazy"}
+          />
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
+        </div>
+      ))}
+
+      {/* centered content */}
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center sm:px-8">
         <div className="animate-fade-up">
-          <Eyebrow>Freelance Apparel Designer · Available</Eyebrow>
-          <h1 className="mt-5 font-display text-[44px] leading-[0.95] sm:text-6xl lg:text-[80px]">
-            Transforming Ideas <br />
-            into <span className="text-gradient-gold">Winning</span> <br />
-            Apparel <span className="text-gradient-royal">Designs.</span>
+          <Eyebrow>William Gutang Design Studio · Available for Projects</Eyebrow>
+          <h1 className="mt-6 font-display text-[44px] leading-[0.95] sm:text-6xl lg:text-[88px]">
+            Transforming Ideas Into <br />
+            <span className="text-gradient-gold">Winning</span>{" "}
+            <span className="text-gradient-royal">Apparel</span> Designs
           </h1>
-          <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-            Professional T-Shirt, Jersey, and Sportswear Designer creating bold visual
-            identities for teams, brands, and organizations across the Philippines.
+          <p className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-white/80 sm:text-base">
+            Professional Designer Specializing in Custom Jerseys, Sportswear,
+            Team Uniforms, T-Shirts, and Merchandise Branding.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#portfolio" className="group inline-flex items-center gap-2 rounded-md bg-[color:var(--royal)] px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.2em] text-white transition-all hover:shadow-glow-royal">
               View Portfolio <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </a>
-            <a href="#contact" className="inline-flex items-center gap-2 rounded-md border border-[color:var(--gold)]/50 bg-transparent px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.2em] text-[color:var(--gold)] transition-all hover:bg-[color:var(--gold)]/10">
-              Request a Design
+            <a href="#contact" className="inline-flex items-center gap-2 rounded-md border border-[color:var(--gold)]/60 bg-black/30 px-6 py-3.5 text-[13px] font-semibold uppercase tracking-[0.2em] text-[color:var(--gold)] backdrop-blur transition-all hover:bg-[color:var(--gold)]/15">
+              Start a Project
             </a>
           </div>
-
-          {/* metrics */}
-          <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/60 pt-6">
-            {[
-              { v: "3+", k: "Years" },
-              { v: "100+", k: "Projects" },
-              { v: "20+", k: "Clients" },
-            ].map(m => (
-              <div key={m.k}>
-                <div className="font-display text-3xl text-gradient-gold sm:text-4xl">{m.v}</div>
-                <div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{m.k}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* floating jersey mockups */}
-        <div className="relative h-[520px] sm:h-[600px]">
-          <div className="absolute inset-0">
-            {floats.map((p, i) => {
-              const layout = [
-                { c: "left-2 top-2 w-[58%] rotate-[-6deg]", d: "0s" },
-                { c: "right-0 top-12 w-[52%] rotate-[5deg]", d: "1.2s" },
-                { c: "left-8 bottom-4 w-[50%] rotate-[3deg]", d: "0.6s" },
-                { c: "right-6 bottom-0 w-[46%] rotate-[-4deg]", d: "1.8s" },
-                { c: "left-1/2 top-1/3 w-[40%] -translate-x-1/2 rotate-[-2deg]", d: "0.9s" },
-              ][i];
-              return (
-                <div key={p.id} className={`absolute ${layout.c} animate-float`} style={{ animationDelay: layout.d, ["--r" as never]: layout.c.match(/rotate\[(.+?)\]/)?.[1] }}>
-                  <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-2xl ring-1 ring-white/5 transition-transform hover:scale-[1.03]">
-                    <img src={p.image} alt={p.title} loading="lazy" className="aspect-[4/5] w-full object-cover" />
-                    <div className="flex items-center justify-between px-3 py-2 text-[10px] uppercase tracking-widest">
-                      <span className="text-[color:var(--gold)]">{p.category}</span>
-                      <span className="text-muted-foreground">#{i + 1}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {/* badge */}
-          <div className="absolute -bottom-2 left-1/2 z-10 -translate-x-1/2 rounded-full border border-[color:var(--gold)]/40 bg-background/90 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-[color:var(--gold)] backdrop-blur shine-gold bg-clip-text">
-            Premium Apparel · Print-Ready
-          </div>
         </div>
       </div>
 
-      {/* marquee */}
-      <div className="mt-20 overflow-hidden border-y border-border/60 py-5">
-        <div className="flex w-max animate-marquee gap-12 whitespace-nowrap font-display text-2xl text-muted-foreground sm:text-3xl">
-          {[
-            "Basketball Jerseys","Volleyball Kits","Esports Apparel","Running Singlets",
-            "Team Uniforms","Streetwear Graphics","Event Shirts","Corporate Branding",
-          ].concat([
-            "Basketball Jerseys","Volleyball Kits","Esports Apparel","Running Singlets",
-            "Team Uniforms","Streetwear Graphics","Event Shirts","Corporate Branding",
-          ]).map((t, i) => (
-            <span key={i} className="flex items-center gap-12">
-              <span className={i % 2 ? "text-foreground" : "text-gradient-gold"}>{t}</span>
-              <span className="text-[color:var(--gold)]/40">✦</span>
-            </span>
-          ))}
-        </div>
+      {/* arrows */}
+      <button
+        onClick={() => go(-1)}
+        aria-label="Previous slide"
+        className="absolute left-3 top-1/2 z-20 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur transition hover:border-[color:var(--gold)] hover:text-[color:var(--gold)] sm:left-6"
+      >
+        <ArrowRight className="size-5 rotate-180" />
+      </button>
+      <button
+        onClick={() => go(1)}
+        aria-label="Next slide"
+        className="absolute right-3 top-1/2 z-20 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur transition hover:border-[color:var(--gold)] hover:text-[color:var(--gold)] sm:right-6"
+      >
+        <ArrowRight className="size-5" />
+      </button>
+
+      {/* dots */}
+      <div className="absolute inset-x-0 bottom-20 z-20 flex justify-center gap-2">
+        {slides.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => to(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+            className={`h-1.5 rounded-full transition-all ${idx === i ? "w-8 bg-[color:var(--gold)]" : "w-3 bg-white/40 hover:bg-white/70"}`}
+          />
+        ))}
       </div>
+
+      {/* scroll cue */}
+      <a href="#about" className="absolute inset-x-0 bottom-6 z-20 mx-auto flex w-fit items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-white/70 transition hover:text-[color:var(--gold)]">
+        Scroll <ChevronDown className="size-4 animate-bounce" />
+      </a>
     </section>
   );
 }
