@@ -1,29 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
+import Home from "@/components/Home";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "William Gutang Design Studio — Jersey & Apparel Design" },
+      { name: "description", content: "Custom sports jerseys, esports apparel, team uniforms and streetwear by William Gutang." },
+      { property: "og:title", content: "William Gutang Design Studio" },
+      { property: "og:description", content: "Bold visual identities for teams, brands, and organizations." },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
-  component: Index,
+  component: Home,
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
