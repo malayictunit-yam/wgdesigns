@@ -53,7 +53,7 @@ function Nav() {
             W<span className="text-[color:var(--gold)]">G</span>
           </span>
           <span className="hidden font-display text-lg leading-none sm:block">
-            William Gutang <span className="text-[color:var(--gold)]">Design Studio</span>
+            https://www.facebook.com/william.d.gutang/
           </span>
         </Link>
         <div className="hidden items-center gap-7 md:flex">
@@ -474,11 +474,11 @@ function Contact() {
   const [sent, setSent] = useState(false);
   const submit = (e: React.FormEvent) => { e.preventDefault(); setSent(true); };
   const socials = [
-    { icon: Mail, label: "Email", v: "hello@williamgutang.design", href: "mailto:hello@williamgutang.design" },
-    { icon: Facebook, label: "Facebook", v: "William Gutang Design Studio", href: "#" },
+    { icon: Mail, label: "Email", v: "william.gutang05@gmail.com", href: "mailto:william.gutang05@gmail.com" },
+    { icon: Facebook, label: "Facebook", v: "https://www.facebook.com/william.d.gutang/", href: "https://www.facebook.com/william.d.gutang/" },
     { icon: Instagram, label: "Instagram", v: "@williamgutang.design", href: "#" },
-    { icon: MessageCircle, label: "WhatsApp", v: "+63 900 000 0000", href: "#" },
-    { icon: Send, label: "Messenger", v: "m.me/williamgutang", href: "#" },
+    { icon: MessageCircle, label: "Contact number", v: "+639686322661", href: "tel:+639686322661" },
+    { icon: Send, label: "Messenger", v: "@william.d.gutang", href: "https://m.me/william.d.gutang" },
   ];
   return (
     <Section id="contact">
@@ -538,7 +538,7 @@ function Footer() {
             <span className="grid size-10 place-items-center rounded-md bg-gradient-to-br from-[color:var(--royal)] to-[#001a55] font-display text-xl ring-gold">
               W<span className="text-[color:var(--gold)]">G</span>
             </span>
-            <span className="font-display text-lg leading-none">William Gutang <span className="text-[color:var(--gold)]">Design Studio</span></span>
+            <span className="font-display text-lg leading-none">https://www.facebook.com/william.d.gutang/</span>
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">Bold visual identities for teams, brands, and organizations.</p>
         </div>
@@ -562,7 +562,7 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-border/60 px-5 py-5 text-center text-xs text-muted-foreground sm:px-8 lg:px-12">
-        © {new Date().getFullYear()} William Gutang Design Studio. All rights reserved.
+        © {new Date().getFullYear()} https://www.facebook.com/william.d.gutang/. All rights reserved.
       </div>
     </footer>
   );
