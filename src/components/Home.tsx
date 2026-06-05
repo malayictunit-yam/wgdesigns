@@ -53,7 +53,7 @@ function Nav() {
             W<span className="text-[color:var(--gold)]">G</span>
           </span>
           <span className="hidden font-display text-lg leading-none sm:block">
-            https://www.facebook.com/william.d.gutang/
+            ​william gutang designs - wg designs
           </span>
         </Link>
         <div className="hidden items-center gap-7 md:flex">
@@ -117,9 +117,9 @@ function Hero() {
           {/* metrics */}
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-border/60 pt-6">
             {[
-              { v: "8+", k: "Years" },
-              { v: "200+", k: "Projects" },
-              { v: "60+", k: "Clients" },
+              { v: "3+", k: "Years" },
+              { v: "100+", k: "Projects" },
+              { v: "20+", k: "Clients" },
             ].map(m => (
               <div key={m.k}>
                 <div className="font-display text-3xl text-gradient-gold sm:text-4xl">{m.v}</div>
@@ -184,9 +184,9 @@ function Hero() {
 /* ------------ About ------------ */
 function About() {
   const stats = [
-    { icon: Trophy, v: "200+", k: "Projects Completed" },
-    { icon: Users, v: "60+", k: "Clients Served" },
-    { icon: Sparkles, v: "8+", k: "Years Experience" },
+    { icon: Trophy, v: "100+", k: "Projects Completed" },
+    { icon: Users, v: "20+", k: "Clients Served" },
+    { icon: Sparkles, v: "3+", k: "Years Experience" },
     { icon: Shirt, v: "12+", k: "Apparel Categories" },
   ];
   return (
@@ -410,7 +410,7 @@ function Process() {
     { n: "02", t: "Concept Development", d: "Moodboards, sketches and color directions." },
     { n: "03", t: "Design Creation", d: "Full vector artwork and mockup presentation." },
     { n: "04", t: "Revision Process", d: "Up to 3 free revision rounds per concept." },
-    { n: "05", t: "Final Delivery", d: "Print-ready files, color separations and source." },
+    { n: "05", t: "Final Delivery", d: "Send-ready files, color separations and source." },
   ];
   return (
     <Section id="process">
@@ -439,7 +439,7 @@ function Testimonials() {
   const items = [
     { n: "Coach Rey Malicse", r: "Malay Basketball Club", q: "Our players felt like pros the moment they put the jersey on. The detail is championship-grade." },
     { n: "Anna Cahilig", r: "Island Bonitas VC", q: "William captured our team's personality and gave it a uniform that travels well — both on court and on socials." },
-    { n: "JR Tan", r: "Dentol's Lechon", q: "He turned our mascot into a brand. Every kit doubles as marketing for the business." },
+    { n: "Dentol", r: "Dentol's Lechon", q: "He turned our mascot into a brand. Every kit doubles as marketing for the business." },
     { n: "LYDO Malay", r: "Youthlympics 2026", q: "Reliable, fast, and detail-obsessed. Print files were flawless on first delivery." },
   ];
   return (
@@ -475,7 +475,7 @@ function Contact() {
   const submit = (e: React.FormEvent) => { e.preventDefault(); setSent(true); };
   const socials = [
     { icon: Mail, label: "Email", v: "william.gutang05@gmail.com", href: "mailto:william.gutang05@gmail.com" },
-    { icon: Facebook, label: "Facebook", v: "https://www.facebook.com/william.d.gutang/", href: "https://www.facebook.com/william.d.gutang/" },
+    { icon: Facebook, label: "Facebook", v: "​william gutang designs - wg designs", href: "https://www.facebook.com/william.d.gutang/" },
     { icon: Instagram, label: "Instagram", v: "@williamgutang.design", href: "#" },
     { icon: MessageCircle, label: "Contact number", v: "+639686322661", href: "tel:+639686322661" },
     { icon: Send, label: "Messenger", v: "@william.d.gutang", href: "https://m.me/william.d.gutang" },
@@ -538,7 +538,7 @@ function Footer() {
             <span className="grid size-10 place-items-center rounded-md bg-gradient-to-br from-[color:var(--royal)] to-[#001a55] font-display text-xl ring-gold">
               W<span className="text-[color:var(--gold)]">G</span>
             </span>
-            <span className="font-display text-lg leading-none">https://www.facebook.com/william.d.gutang/</span>
+            <span className="font-display text-lg leading-none">​william gutang designs - wg designs</span>
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">Bold visual identities for teams, brands, and organizations.</p>
         </div>
@@ -562,7 +562,7 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-border/60 px-5 py-5 text-center text-xs text-muted-foreground sm:px-8 lg:px-12">
-        © {new Date().getFullYear()} https://www.facebook.com/william.d.gutang/. All rights reserved.
+        © {new Date().getFullYear()} ​william gutang designs - wg designs. All rights reserved.
       </div>
     </footer>
   );
