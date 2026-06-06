@@ -6,6 +6,7 @@ import {
   Crown, Flame, CheckCircle2, Play, Quote
 } from "lucide-react";
 import { projects, categories, type Category, type Project } from "@/data/projects";
+import wgLogo from "@/assets/wgdesigns_logo.png.asset.json";
 
 /* ------------ small primitives ------------ */
 const Section = ({ id, children, className = "" }: { id?: string; children: React.ReactNode; className?: string }) => (
@@ -49,9 +50,7 @@ function Nav() {
     <header className={`fixed inset-x-0 top-0 z-50 transition-all ${scrolled ? "bg-background/80 backdrop-blur-xl border-b border-border/60" : ""}`}>
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8 lg:px-12">
         <Link to="/" className="group flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-md bg-gradient-to-br from-[color:var(--royal)] to-[#001a55] font-display text-xl ring-gold">
-            W<span className="text-[color:var(--gold)]">G</span>
-          </span>
+          <img src={wgLogo.url} alt="WG Designs logo" className="size-10 rounded-md object-contain" />
           <span className="hidden font-display text-lg leading-none sm:block">
             ​william gutang designs - wg designs
           </span>
