@@ -6,6 +6,7 @@ import {
   Crown, Flame, CheckCircle2, Play, Quote
 } from "lucide-react";
 import { projects, categories, type Category, type Project } from "@/data/projects";
+import wgLogo from "@/assets/wgdesigns_logo.png.asset.json";
 
 /* ------------ small primitives ------------ */
 const Section = ({ id, children, className = "" }: { id?: string; children: React.ReactNode; className?: string }) => (
