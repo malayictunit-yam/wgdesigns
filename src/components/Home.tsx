@@ -413,7 +413,9 @@ function Lightbox({ p, onClose }: { p: Project | null; onClose: () => void }) {
 
 /* ------------ Featured Case Study ------------ */
 function Featured() {
-  const p = projects.find(x => x.id === "mobilelegends")!;
+  const projects = useLiveProjects();
+  const p = projects.find(x => x.id === "mobilelegends") || projects.find(x => x.featured) || projects[0];
+  if (!p) return null;
   return (
     <Section id="featured" className="bg-surface/40">
       <SectionHeading eyebrow="Featured Case Study" title="Malay Mobile Legends" accent="Tournament" subtitle="A complete esports identity system: jersey, tournament marks, social assets and event collateral." />
