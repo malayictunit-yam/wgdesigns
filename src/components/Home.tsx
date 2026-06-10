@@ -5,8 +5,33 @@ import {
   Star, Trophy, Users, Sparkles, ChevronDown, Palette, Type, Layers, Shirt,
   Crown, Flame, CheckCircle2, Play, Quote
 } from "lucide-react";
-import { projects, categories, type Category, type Project } from "@/data/projects";
+import { projects as staticProjects, categories, type Category, type Project } from "@/data/projects";
 import wgLogo from "@/assets/wgdesigns_logo.png.asset.json";
+import { supabase } from "@/integrations/supabase/client";
+
+let _cache: Project[] | null = null;
+function useLiveProjects(): Project[] {
+  const [list, setList] = useState<Project[]>(_cache ?? staticProjects);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id,title,category,client,image_url,description,palette,typography,featured,sort_order")
+        .order("sort_order", { ascending: true });
+      if (cancelled || error || !data) return;
+      const mapped: Project[] = data.map((r: any) => ({
+        id: r.id, title: r.title, category: r.category as Category, client: r.client,
+        image: r.image_url, description: r.description, palette: r.palette || [],
+        typography: r.typography || undefined, featured: r.featured,
+      }));
+      _cache = mapped;
+      setList(mapped);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+  return list;
+}
 
 /* ------------ small primitives ------------ */
 const Section = ({ id, children, className = "" }: { id?: string; children: React.ReactNode; className?: string }) => (
@@ -84,11 +109,12 @@ function Nav() {
 
 /* ------------ Hero (Full-screen Carousel) ------------ */
 function Hero() {
+  const projects = useLiveProjects();
   const slides = useMemo(() => {
     const wanted = ["amis", "islandbonitas", "apex", "mobilelegends", "onelove", "dentols", "cyclingyellow", "bolaboc"];
     const picks = wanted.map(id => projects.find(p => p.id === id)).filter(Boolean) as Project[];
     return picks.length ? picks : projects.slice(0, 6);
-  }, []);
+  }, [projects]);
   const [i, setI] = useState(0);
   const n = slides.length;
   const go = (d: number) => setI(v => (v + d + n) % n);
@@ -272,12 +298,13 @@ function Services() {
 
 /* ------------ Portfolio ------------ */
 function Portfolio({ onOpen }: { onOpen: (p: Project) => void }) {
+  const projects = useLiveProjects();
   const [active, setActive] = useState<"All" | Category>("All");
   const [q, setQ] = useState("");
   const filtered = useMemo(() => projects.filter(p =>
     (active === "All" || p.category === active) &&
     (q === "" || (p.title + p.client + p.category).toLowerCase().includes(q.toLowerCase()))
-  ), [active, q]);
+  ), [active, q, projects]);
 
   return (
     <Section id="portfolio">
@@ -386,7 +413,9 @@ function Lightbox({ p, onClose }: { p: Project | null; onClose: () => void }) {
 
 /* ------------ Featured Case Study ------------ */
 function Featured() {
-  const p = projects.find(x => x.id === "mobilelegends")!;
+  const projects = useLiveProjects();
+  const p = projects.find(x => x.id === "mobilelegends") || projects.find(x => x.featured) || projects[0];
+  if (!p) return null;
   return (
     <Section id="featured" className="bg-surface/40">
       <SectionHeading eyebrow="Featured Case Study" title="Malay Mobile Legends" accent="Tournament" subtitle="A complete esports identity system: jersey, tournament marks, social assets and event collateral." />
