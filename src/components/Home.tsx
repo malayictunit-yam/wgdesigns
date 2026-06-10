@@ -109,11 +109,12 @@ function Nav() {
 
 /* ------------ Hero (Full-screen Carousel) ------------ */
 function Hero() {
+  const projects = useLiveProjects();
   const slides = useMemo(() => {
     const wanted = ["amis", "islandbonitas", "apex", "mobilelegends", "onelove", "dentols", "cyclingyellow", "bolaboc"];
     const picks = wanted.map(id => projects.find(p => p.id === id)).filter(Boolean) as Project[];
     return picks.length ? picks : projects.slice(0, 6);
-  }, []);
+  }, [projects]);
   const [i, setI] = useState(0);
   const n = slides.length;
   const go = (d: number) => setI(v => (v + d + n) % n);
