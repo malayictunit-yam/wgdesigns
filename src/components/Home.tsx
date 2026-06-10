@@ -515,7 +515,28 @@ function Testimonials() {
 /* ------------ Contact ------------ */
 function Contact() {
   const [sent, setSent] = useState(false);
-  const submit = (e: React.FormEvent) => { e.preventDefault(); setSent(true); };
+  const [form, setForm] = useState({ name: "", email: "", type: "", budget: "", brief: "" });
+  const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }));
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const to = "william.gutang05@gmail.com";
+    const subject = `New Brief from ${form.name || "Website"}${form.type ? ` — ${form.type}` : ""}`;
+    const body = [
+      `Name: ${form.name}`,
+      `Email: ${form.email}`,
+      `Project Type: ${form.type}`,
+      `Budget: ${form.budget}`,
+      ``,
+      `Brief:`,
+      form.brief,
+    ].join("\n");
+    const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const w = window.open(gmail, "_blank");
+    if (!w) window.location.href = mailto;
+    setSent(true);
+  };
   const socials = [
     { icon: Mail, label: "Email", v: "william.gutang05@gmail.com", href: "mailto:william.gutang05@gmail.com" },
     { icon: Facebook, label: "Facebook", v: "​william gutang designs - wg designs", href: "https://www.facebook.com/william.d.gutang/" },
@@ -529,14 +550,14 @@ function Contact() {
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <form onSubmit={submit} className="rounded-2xl border border-border bg-surface p-7">
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Your Name" name="name" placeholder="Coach / Team / Brand" />
-            <Field label="Email" name="email" type="email" placeholder="you@email.com" />
-            <Field label="Project Type" name="type" placeholder="Basketball jersey, esports kit, event tee…" />
-            <Field label="Budget Range" name="budget" placeholder="Optional" />
+            <Field label="Your Name" name="name" placeholder="Coach / Team / Brand" value={form.name} onChange={update("name")} />
+            <Field label="Email" name="email" type="email" placeholder="you@email.com" value={form.email} onChange={update("email")} />
+            <Field label="Project Type" name="type" placeholder="Basketball jersey, esports kit, event tee…" value={form.type} onChange={update("type")} />
+            <Field label="Budget Range" name="budget" placeholder="Optional" value={form.budget} onChange={update("budget")} />
           </div>
           <div className="mt-5">
             <label className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-muted-foreground">Brief</label>
-            <textarea required rows={5} placeholder="Tell me about the team, colors you love, deadlines…" className="w-full rounded-lg border border-border bg-background p-4 text-sm placeholder:text-muted-foreground focus:border-[color:var(--gold)] focus:outline-none" />
+            <textarea required rows={5} value={form.brief} onChange={update("brief")} placeholder="Tell me about the team, colors you love, deadlines…" className="w-full rounded-lg border border-border bg-background p-4 text-sm placeholder:text-muted-foreground focus:border-[color:var(--gold)] focus:outline-none" />
           </div>
           <button type="submit" className="mt-6 inline-flex items-center gap-2 rounded-md bg-[color:var(--royal)] px-6 py-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-white transition-all hover:shadow-glow-royal">
             {sent ? "Sent · I'll reply soon" : <>Send Brief <Send className="size-4" /></>}
