@@ -24,6 +24,7 @@ function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const upload = useServerFn(uploadProjectImage);
+  const describe = useServerFn(describeProjectImage);
 
   async function load() {
     const { data } = await supabase.from("projects").select("*").order("sort_order");
