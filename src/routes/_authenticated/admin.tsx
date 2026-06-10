@@ -57,25 +57,37 @@ function AdminPage() {
     load();
   }
 
+  async function fileToBase64(file: File): Promise<string> {
+    // Chunked encode — avoids "Maximum call stack size exceeded" on large images
+    const buf = new Uint8Array(await file.arrayBuffer());
+    let binary = "";
+    const CHUNK = 0x8000;
+    for (let i = 0; i < buf.length; i += CHUNK) {
+      binary += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + CHUNK)));
+    }
+    return btoa(binary);
+  }
+
   async function onUpload(row: Row, file: File) {
     setBusy(true); setMsg("Uploading…");
-    const buf = await file.arrayBuffer();
-    const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
     try {
+      const b64 = await fileToBase64(file);
       const { url } = await upload({ data: { fileBase64: b64, filename: file.name, contentType: file.type || "image/jpeg" } });
       setRows(rs => rs.map(r => r.id === row.id ? { ...r, image_url: url } : r));
-      await supabase.from("projects").update({ image_url: url }).eq("id", row.id);
+      const { error } = await supabase.from("projects").update({ image_url: url }).eq("id", row.id);
+      if (error) throw error;
       setMsg("Image updated");
-    } catch (e: any) { setMsg(e.message); }
-    setBusy(false);
+    } catch (e: any) {
+      console.error("upload failed", e);
+      setMsg(e?.message || "Upload failed");
+    } finally { setBusy(false); }
   }
 
   async function addNew(file: File, title: string, category: string) {
     if (!title || !file) return;
     setBusy(true); setMsg("Uploading…");
-    const buf = await file.arrayBuffer();
-    const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
     try {
+      const b64 = await fileToBase64(file);
       const { url } = await upload({ data: { fileBase64: b64, filename: file.name, contentType: file.type || "image/jpeg" } });
       const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 40) + "_" + Date.now();
       const maxOrder = Math.max(0, ...rows.map(r => r.sort_order)) + 10;
@@ -85,9 +97,12 @@ function AdminPage() {
       if (error) throw error;
       setMsg("Added");
       load();
-    } catch (e: any) { setMsg(e.message); }
-    setBusy(false);
+    } catch (e: any) {
+      console.error("add failed", e);
+      setMsg(e?.message || "Add failed");
+    } finally { setBusy(false); }
   }
+
 
   if (isAdmin === null) return <main className="grid min-h-screen place-items-center text-muted-foreground">Loading…</main>;
   if (!isAdmin) return (
