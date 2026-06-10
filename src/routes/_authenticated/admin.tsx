@@ -174,6 +174,7 @@ function AdminPage() {
                   Replace image
                   <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && onUpload(r, e.target.files[0])} />
                 </label>
+                <button onClick={() => regenDescription(r)} disabled={busy} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-secondary disabled:opacity-50">AI describe</button>
                 <button onClick={() => remove(r.id)} className="rounded-md border border-destructive/40 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10">Delete</button>
               </div>
             </div>
