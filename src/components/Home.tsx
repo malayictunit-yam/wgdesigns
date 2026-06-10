@@ -5,8 +5,33 @@ import {
   Star, Trophy, Users, Sparkles, ChevronDown, Palette, Type, Layers, Shirt,
   Crown, Flame, CheckCircle2, Play, Quote
 } from "lucide-react";
-import { projects, categories, type Category, type Project } from "@/data/projects";
+import { projects as staticProjects, categories, type Category, type Project } from "@/data/projects";
 import wgLogo from "@/assets/wgdesigns_logo.png.asset.json";
+import { supabase } from "@/integrations/supabase/client";
+
+let _cache: Project[] | null = null;
+function useLiveProjects(): Project[] {
+  const [list, setList] = useState<Project[]>(_cache ?? staticProjects);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("id,title,category,client,image_url,description,palette,typography,featured,sort_order")
+        .order("sort_order", { ascending: true });
+      if (cancelled || error || !data) return;
+      const mapped: Project[] = data.map((r: any) => ({
+        id: r.id, title: r.title, category: r.category as Category, client: r.client,
+        image: r.image_url, description: r.description, palette: r.palette || [],
+        typography: r.typography || undefined, featured: r.featured,
+      }));
+      _cache = mapped;
+      setList(mapped);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+  return list;
+}
 
 /* ------------ small primitives ------------ */
 const Section = ({ id, children, className = "" }: { id?: string; children: React.ReactNode; className?: string }) => (
