@@ -91,10 +91,16 @@ function AdminPage() {
     try {
       const b64 = await fileToBase64(file);
       const { url } = await upload({ data: { fileBase64: b64, filename: file.name, contentType: file.type || "image/jpeg" } });
+      setMsg("Generating description…");
+      let description = "";
+      try {
+        const r = await describe({ data: { imageUrl: url, title, category } });
+        description = r.description || "";
+      } catch (e) { console.error("describe failed", e); }
       const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 40) + "_" + Date.now();
       const maxOrder = Math.max(0, ...rows.map(r => r.sort_order)) + 10;
       const { error } = await supabase.from("projects").insert({
-        id, title, category, client: "", image_url: url, description: "", palette: [], featured: false, sort_order: maxOrder,
+        id, title, category, client: "", image_url: url, description, palette: [], featured: false, sort_order: maxOrder,
       });
       if (error) throw error;
       setMsg("Added");
@@ -102,6 +108,20 @@ function AdminPage() {
     } catch (e: any) {
       console.error("add failed", e);
       setMsg(e?.message || "Add failed");
+    } finally { setBusy(false); }
+  }
+
+  async function regenDescription(row: Row) {
+    setBusy(true); setMsg("Generating description…");
+    try {
+      const { description } = await describe({ data: { imageUrl: row.image_url, title: row.title, category: row.category } });
+      setRows(rs => rs.map(r => r.id === row.id ? { ...r, description } : r));
+      const { error } = await supabase.from("projects").update({ description }).eq("id", row.id);
+      if (error) throw error;
+      setMsg("Description updated");
+    } catch (e: any) {
+      console.error("regen failed", e);
+      setMsg(e?.message || "Generate failed");
     } finally { setBusy(false); }
   }
 
