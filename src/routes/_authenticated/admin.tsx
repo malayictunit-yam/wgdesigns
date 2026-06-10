@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadProjectImage } from "@/lib/projects.functions";
+import { describeProjectImage } from "@/lib/describe.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — WG Designs" }] }),
@@ -23,6 +24,7 @@ function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const upload = useServerFn(uploadProjectImage);
+  const describe = useServerFn(describeProjectImage);
 
   async function load() {
     const { data } = await supabase.from("projects").select("*").order("sort_order");
@@ -89,10 +91,16 @@ function AdminPage() {
     try {
       const b64 = await fileToBase64(file);
       const { url } = await upload({ data: { fileBase64: b64, filename: file.name, contentType: file.type || "image/jpeg" } });
+      setMsg("Generating description…");
+      let description = "";
+      try {
+        const r = await describe({ data: { imageUrl: url, title, category } });
+        description = r.description || "";
+      } catch (e) { console.error("describe failed", e); }
       const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 40) + "_" + Date.now();
       const maxOrder = Math.max(0, ...rows.map(r => r.sort_order)) + 10;
       const { error } = await supabase.from("projects").insert({
-        id, title, category, client: "", image_url: url, description: "", palette: [], featured: false, sort_order: maxOrder,
+        id, title, category, client: "", image_url: url, description, palette: [], featured: false, sort_order: maxOrder,
       });
       if (error) throw error;
       setMsg("Added");
@@ -100,6 +108,20 @@ function AdminPage() {
     } catch (e: any) {
       console.error("add failed", e);
       setMsg(e?.message || "Add failed");
+    } finally { setBusy(false); }
+  }
+
+  async function regenDescription(row: Row) {
+    setBusy(true); setMsg("Generating description…");
+    try {
+      const { description } = await describe({ data: { imageUrl: row.image_url, title: row.title, category: row.category } });
+      setRows(rs => rs.map(r => r.id === row.id ? { ...r, description } : r));
+      const { error } = await supabase.from("projects").update({ description }).eq("id", row.id);
+      if (error) throw error;
+      setMsg("Description updated");
+    } catch (e: any) {
+      console.error("regen failed", e);
+      setMsg(e?.message || "Generate failed");
     } finally { setBusy(false); }
   }
 
@@ -152,6 +174,7 @@ function AdminPage() {
                   Replace image
                   <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && onUpload(r, e.target.files[0])} />
                 </label>
+                <button onClick={() => regenDescription(r)} disabled={busy} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-secondary disabled:opacity-50">AI describe</button>
                 <button onClick={() => remove(r.id)} className="rounded-md border border-destructive/40 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10">Delete</button>
               </div>
             </div>
