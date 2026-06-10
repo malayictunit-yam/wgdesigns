@@ -298,12 +298,13 @@ function Services() {
 
 /* ------------ Portfolio ------------ */
 function Portfolio({ onOpen }: { onOpen: (p: Project) => void }) {
+  const projects = useLiveProjects();
   const [active, setActive] = useState<"All" | Category>("All");
   const [q, setQ] = useState("");
   const filtered = useMemo(() => projects.filter(p =>
     (active === "All" || p.category === active) &&
     (q === "" || (p.title + p.client + p.category).toLowerCase().includes(q.toLowerCase()))
-  ), [active, q]);
+  ), [active, q, projects]);
 
   return (
     <Section id="portfolio">
