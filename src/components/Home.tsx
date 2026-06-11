@@ -8,6 +8,7 @@ import {
 import { projects as staticProjects, categories, type Category, type Project } from "@/data/projects";
 import wgLogo from "@/assets/wgdesigns_logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
+import { ChatWidget } from "@/components/ChatWidget";
 
 let _cache: Project[] | null = null;
 function useLiveProjects(): Project[] {
@@ -648,6 +649,7 @@ export default function Home() {
       </main>
       <Footer />
       <Lightbox p={active} onClose={() => setActive(null)} />
+      <ChatWidget />
     </div>
   );
 }
