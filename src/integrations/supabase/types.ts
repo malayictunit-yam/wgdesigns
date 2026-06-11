@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender: string
+          session_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender: string
+          session_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          unread_for_admin: number
+          unread_for_visitor: number
+          updated_at: string
+          visitor_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          unread_for_admin?: number
+          unread_for_visitor?: number
+          updated_at?: string
+          visitor_name?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          unread_for_admin?: number
+          unread_for_visitor?: number
+          updated_at?: string
+          visitor_name?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           category: string

@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadProjectImage } from "@/lib/projects.functions";
 import { describeProjectImage } from "@/lib/describe.functions";
+import { AdminChat } from "@/components/AdminChat";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — WG Designs" }] }),
@@ -180,6 +181,8 @@ function AdminPage() {
             </div>
           ))}
         </div>
+
+        <AdminChat />
       </div>
     </main>
   );
