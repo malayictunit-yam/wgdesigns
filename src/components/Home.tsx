@@ -531,10 +531,8 @@ function Contact() {
       `Brief:`,
       form.brief,
     ].join("\n");
-    const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    const w = window.open(gmail, "_blank");
-    if (!w) window.location.href = mailto;
+    window.location.href = mailto;
     setSent(true);
   };
   const socials = [
