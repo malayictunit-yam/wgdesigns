@@ -45,16 +45,17 @@ export function AdminChat() {
 
   useEffect(() => {
     if (!activeId) { setMessages([]); return; }
+    const sid = activeId;
     let cancelled = false;
     async function pollMessages() {
       const { data } = await supabase
         .from("chat_messages")
         .select("id,sender,body,created_at,attachment_url,attachment_name,attachment_type")
-        .eq("session_id", activeId)
+        .eq("session_id", sid)
         .order("created_at", { ascending: true });
       if (cancelled || !data) return;
       setMessages(data as Msg[]);
-      await supabase.from("chat_sessions").update({ unread_for_admin: 0 }).eq("id", activeId);
+      await supabase.from("chat_sessions").update({ unread_for_admin: 0 }).eq("id", sid);
     }
     pollMessages();
     const interval = setInterval(pollMessages, 2500);
