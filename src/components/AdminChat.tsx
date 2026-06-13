@@ -30,50 +30,35 @@ export function AdminChat() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    async function pollSessions() {
       const { data } = await supabase
         .from("chat_sessions")
         .select("id,visitor_name,last_message_at,unread_for_admin")
         .order("last_message_at", { ascending: false })
         .limit(100);
       if (!cancelled && data) setSessions(data as Session[]);
-    })();
-
-    const ch = supabase
-      .channel("admin:sessions")
-      .on("postgres_changes", { event: "*", schema: "public", table: "chat_sessions" }, async () => {
-        const { data } = await supabase
-          .from("chat_sessions")
-          .select("id,visitor_name,last_message_at,unread_for_admin")
-          .order("last_message_at", { ascending: false })
-          .limit(100);
-        if (data) setSessions(data as Session[]);
-      })
-      .subscribe();
-    return () => { cancelled = true; supabase.removeChannel(ch); };
+    }
+    pollSessions();
+    const interval = setInterval(pollSessions, 3000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
 
   useEffect(() => {
     if (!activeId) { setMessages([]); return; }
     let cancelled = false;
-    (async () => {
+    async function pollMessages() {
       const { data } = await supabase
         .from("chat_messages")
         .select("id,sender,body,created_at,attachment_url,attachment_name,attachment_type")
         .eq("session_id", activeId)
         .order("created_at", { ascending: true });
-      if (!cancelled && data) setMessages(data as Msg[]);
+      if (cancelled || !data) return;
+      setMessages(data as Msg[]);
       await supabase.from("chat_sessions").update({ unread_for_admin: 0 }).eq("id", activeId);
-    })();
-    const ch = supabase
-      .channel(`admin:msgs:${activeId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `session_id=eq.${activeId}` }, (payload) => {
-        const m = payload.new as Msg;
-        setMessages((prev) => (prev.some(p => p.id === m.id) ? prev : [...prev, m]));
-        if (m.sender === "visitor") supabase.from("chat_sessions").update({ unread_for_admin: 0 }).eq("id", activeId).then(() => {});
-      })
-      .subscribe();
-    return () => { cancelled = true; supabase.removeChannel(ch); };
+    }
+    pollMessages();
+    const interval = setInterval(pollMessages, 2500);
+    return () => { cancelled = true; clearInterval(interval); };
   }, [activeId]);
 
   useEffect(() => {

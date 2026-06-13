@@ -39,25 +39,26 @@ export function ChatWidget() {
   useEffect(() => {
     if (!sessionId) return;
     let cancelled = false;
-    (async () => {
+    const seenIds = new Set<string>();
+
+    async function poll() {
       const { data } = await supabase
         .from("chat_messages")
         .select("id,sender,body,created_at,attachment_url,attachment_name,attachment_type")
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
-      if (!cancelled && data) setMessages(data as Msg[]);
-    })();
-
-    const channel = supabase
-      .channel(`chat:${sessionId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `session_id=eq.${sessionId}` }, (payload) => {
-        const m = payload.new as Msg;
-        setMessages((prev) => (prev.some(p => p.id === m.id) ? prev : [...prev, m]));
-        if (m.sender === "admin" && !open) setUnread((u) => u + 1);
-      })
-      .subscribe();
-
-    return () => { cancelled = true; supabase.removeChannel(channel); };
+      if (cancelled || !data) return;
+      const fresh = data as Msg[];
+      const newAdminMsgs = fresh.filter((m) => !seenIds.has(m.id) && m.sender === "admin");
+      fresh.forEach((m) => seenIds.add(m.id));
+      setMessages(fresh);
+      if (newAdminMsgs.length && !open && seenIds.size > newAdminMsgs.length) {
+        setUnread((u) => u + newAdminMsgs.length);
+      }
+    }
+    poll();
+    const interval = setInterval(poll, 2500);
+    return () => { cancelled = true; clearInterval(interval); };
   }, [sessionId, open]);
 
   useEffect(() => {
