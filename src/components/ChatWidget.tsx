@@ -38,6 +38,15 @@ export function ChatWidget() {
 
   useEffect(() => {
     if (!sessionId) return;
+    const sid = sessionId;
+    let cancelled = false;
+    const seenIds = new Set<string>();
+
+    async function poll() {
+      const { data } = await supabase
+        .from("chat_messages")
+        .select("id,sender,body,created_at,attachment_url,attachment_name,attachment_type")
+        .eq("session_id", sid)
     let cancelled = false;
     const seenIds = new Set<string>();
 
