@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Paperclip, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadChatFile, isImageType } from "@/lib/chatUpload";
 
-type Msg = { id: string; sender: "visitor" | "admin"; body: string; created_at: string };
+type Msg = {
+  id: string;
+  sender: "visitor" | "admin";
+  body: string | null;
+  created_at: string;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_type?: string | null;
+};
 
 const KEY = "wg_chat_session_id";
 const NAME_KEY = "wg_chat_visitor_name";
@@ -14,10 +23,11 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [unread, setUnread] = useState(0);
+  const [uploading, setUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  // Load saved session
   useEffect(() => {
     if (typeof window === "undefined") return;
     const sid = localStorage.getItem(KEY);
@@ -26,14 +36,13 @@ export function ChatWidget() {
     if (sid) setSessionId(sid);
   }, []);
 
-  // Load messages + realtime when session exists
   useEffect(() => {
     if (!sessionId) return;
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("chat_messages")
-        .select("id,sender,body,created_at")
+        .select("id,sender,body,created_at,attachment_url,attachment_name,attachment_type")
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
       if (!cancelled && data) setMessages(data as Msg[]);
@@ -51,7 +60,6 @@ export function ChatWidget() {
     return () => { cancelled = true; supabase.removeChannel(channel); };
   }, [sessionId, open]);
 
-  // Scroll to bottom + clear unread on open
   useEffect(() => {
     if (open) {
       setUnread(0);
@@ -59,7 +67,6 @@ export function ChatWidget() {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
         inputRef.current?.focus();
       });
-      // mark visitor-side read
       if (sessionId) {
         supabase.from("chat_sessions").update({ unread_for_visitor: 0 }).eq("id", sessionId).then(() => {});
       }
@@ -91,9 +98,37 @@ export function ChatWidget() {
     if (error) { console.error(error); setText(body); }
   }
 
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const sid = await ensureSession();
+    if (!sid) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        try {
+          const att = await uploadChatFile(file, sid);
+          const { error } = await supabase.from("chat_messages").insert({
+            session_id: sid,
+            sender: "visitor",
+            body: null,
+            attachment_url: att.url,
+            attachment_name: att.name,
+            attachment_type: att.type,
+          });
+          if (error) throw error;
+        } catch (e: any) {
+          console.error(e);
+          alert(`Upload failed: ${e?.message || e}`);
+        }
+      }
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
   return (
     <>
-      {/* Floating button */}
       <button
         aria-label="Open chat"
         onClick={() => setOpen((v) => !v)}
@@ -105,7 +140,6 @@ export function ChatWidget() {
         )}
       </button>
 
-      {/* Panel */}
       {open && (
         <div className="fixed bottom-24 right-5 z-[60] flex h-[520px] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3 border-b border-border bg-card/60 px-4 py-3">
@@ -114,7 +148,7 @@ export function ChatWidget() {
             </div>
             <div className="min-w-0">
               <div className="text-sm font-semibold leading-tight">Chat with William</div>
-              <div className="text-[11px] text-muted-foreground">Usually replies within a few hours</div>
+              <div className="text-[11px] text-muted-foreground">Send a message or jersey design</div>
             </div>
           </div>
 
@@ -133,21 +167,11 @@ export function ChatWidget() {
           <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
             {messages.length === 0 && (
               <div className="mt-6 text-center text-sm text-muted-foreground">
-                Send a message — I'll reply here as soon as I can.
+                Send a message or attach your design — I'll reply here.
               </div>
             )}
             {messages.map((m) => (
-              <div key={m.id} className={`flex ${m.sender === "visitor" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm ${
-                    m.sender === "visitor"
-                      ? "rounded-br-sm bg-[color:var(--gold)] text-black"
-                      : "rounded-bl-sm bg-secondary text-foreground"
-                  }`}
-                >
-                  {m.body}
-                </div>
-              </div>
+              <MessageBubble key={m.id} m={m} mine={m.sender === "visitor"} />
             ))}
           </div>
 
@@ -155,6 +179,23 @@ export function ChatWidget() {
             onSubmit={(e) => { e.preventDefault(); send(); }}
             className="flex items-end gap-2 border-t border-border bg-card/60 p-2"
           >
+            <input
+              ref={fileRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.ai,.psd,.cdr,.svg,.eps"
+              className="hidden"
+              onChange={(e) => handleFiles(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground disabled:opacity-40"
+              aria-label="Attach file"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+            </button>
             <textarea
               ref={inputRef}
               value={text}
@@ -178,5 +219,32 @@ export function ChatWidget() {
         </div>
       )}
     </>
+  );
+}
+
+function MessageBubble({ m, mine }: { m: Msg; mine: boolean }) {
+  const hasAttachment = !!m.attachment_url;
+  const image = hasAttachment && isImageType(m.attachment_type);
+  return (
+    <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+      <div
+        className={`max-w-[80%] space-y-1 rounded-2xl px-3 py-2 text-sm ${
+          mine ? "rounded-br-sm bg-[color:var(--gold)] text-black" : "rounded-bl-sm bg-secondary text-foreground"
+        }`}
+      >
+        {image && (
+          <a href={m.attachment_url!} target="_blank" rel="noopener noreferrer">
+            <img src={m.attachment_url!} alt={m.attachment_name || "attachment"} className="max-h-60 rounded-md object-cover" />
+          </a>
+        )}
+        {hasAttachment && !image && (
+          <a href={m.attachment_url!} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 underline">
+            <Paperclip className="h-3.5 w-3.5" />
+            <span className="truncate">{m.attachment_name || "Download file"}</span>
+          </a>
+        )}
+        {m.body && <div className="whitespace-pre-wrap break-words">{m.body}</div>}
+      </div>
+    </div>
   );
 }
