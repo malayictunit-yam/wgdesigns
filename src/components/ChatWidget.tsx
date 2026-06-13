@@ -47,21 +47,14 @@ export function ChatWidget() {
         .from("chat_messages")
         .select("id,sender,body,created_at,attachment_url,attachment_name,attachment_type")
         .eq("session_id", sid)
-    let cancelled = false;
-    const seenIds = new Set<string>();
-
-    async function poll() {
-      const { data } = await supabase
-        .from("chat_messages")
-        .select("id,sender,body,created_at,attachment_url,attachment_name,attachment_type")
-        .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
       if (cancelled || !data) return;
       const fresh = data as Msg[];
       const newAdminMsgs = fresh.filter((m) => !seenIds.has(m.id) && m.sender === "admin");
+      const isFirst = seenIds.size === 0;
       fresh.forEach((m) => seenIds.add(m.id));
       setMessages(fresh);
-      if (newAdminMsgs.length && !open && seenIds.size > newAdminMsgs.length) {
+      if (!isFirst && newAdminMsgs.length && !open) {
         setUnread((u) => u + newAdminMsgs.length);
       }
     }
