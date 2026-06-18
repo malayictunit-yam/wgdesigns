@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "vite build",
+  "devCommand": "vite dev",
+  "installCommand": "bun install",
+  "framework": null,
+  "env": {
+    "NITRO_PRESET": "vercel"
+  }
+}
