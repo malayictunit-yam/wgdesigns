@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "vite build",
+  "buildCommand": "node scripts/vercel-env-check.mjs && vite build",
   "devCommand": "vite dev",
   "installCommand": "bun install",
   "framework": null,
