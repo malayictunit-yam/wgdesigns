@@ -431,7 +431,7 @@ function Featured() {
       <SectionHeading eyebrow="Featured Case Study" title="Malay Mobile Legends" accent="Tournament" subtitle="A complete esports identity system: jersey, tournament marks, social assets and event collateral." />
       <div className="grid items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="overflow-hidden rounded-2xl border border-border bg-black">
-          <img src={p.image} alt={p.title} className="size-full object-cover" />
+          <img src={p.image} alt={p.title} loading="lazy" decoding="async" className="size-full object-cover" />
         </div>
         <div className="grid gap-4">
           {[
