@@ -387,7 +387,7 @@ function Lightbox({ p, onClose }: { p: Project | null; onClose: () => void }) {
         <button onClick={onClose} aria-label="Close" className="absolute right-3 top-3 z-10 grid size-10 place-items-center rounded-full bg-black/70 text-white hover:bg-[color:var(--gold)] hover:text-black">
           <X className="size-5" />
         </button>
-        <img src={p.image} alt={p.title} className="size-full max-h-[80vh] object-contain bg-black" />
+        <img src={p.image} alt={p.title} loading="lazy" decoding="async" className="size-full max-h-[80vh] object-contain bg-black" />
         <div className="space-y-5 p-8">
           <span className="rounded-full border border-[color:var(--gold)]/40 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[color:var(--gold)]">{p.category}</span>
           <h3 className="font-display text-3xl leading-tight sm:text-4xl">{p.title}</h3>
