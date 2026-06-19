@@ -345,7 +345,7 @@ function Portfolio({ onOpen }: { onOpen: (p: Project) => void }) {
           <button key={p.id} onClick={() => onOpen(p)}
             className="group relative overflow-hidden rounded-2xl border border-border bg-surface text-left transition-all hover:-translate-y-1 hover:border-[color:var(--gold)]/50 hover:shadow-glow-gold">
             <div className="relative aspect-[4/5] overflow-hidden bg-black">
-              <img src={p.image} alt={p.title} loading="lazy"
+              <img src={p.image} alt={p.title} loading="lazy" decoding="async"
                 className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
                 <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] uppercase tracking-widest text-[color:var(--gold)] backdrop-blur">{p.category}</span>
