@@ -144,23 +144,32 @@ function Hero() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* slides */}
-      {slides.map((s, idx) => (
-        <div
-          key={s.id}
-          className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${idx === i ? "opacity-100" : "opacity-0"}`}
-          aria-hidden={idx !== i}
-        >
-          <img
-            src={s.image}
-            alt={s.title}
-            className={`size-full object-cover ${idx === i ? "animate-hero-zoom" : ""}`}
-            loading={idx === 0 ? "eager" : "lazy"}
-          />
-          <div className="absolute inset-0 bg-black/55" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
-        </div>
-      ))}
+      {/* slides — only mount current + neighbors to avoid loading all hero images upfront */}
+      {slides.map((s, idx) => {
+        const isActive = idx === i;
+        const isNeighbor = idx === (i + 1) % n || idx === (i - 1 + n) % n;
+        const shouldRender = isActive || isNeighbor || idx === 0;
+        return (
+          <div
+            key={s.id}
+            className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${isActive ? "opacity-100" : "opacity-0"}`}
+            aria-hidden={!isActive}
+          >
+            {shouldRender && (
+              <img
+                src={s.image}
+                alt={s.title}
+                className={`size-full object-cover ${isActive ? "animate-hero-zoom" : ""}`}
+                loading={idx === 0 ? "eager" : "lazy"}
+                decoding={idx === 0 ? "sync" : "async"}
+                {...(idx === 0 ? { fetchPriority: "high" as const } : {})}
+              />
+            )}
+            <div className="absolute inset-0 bg-black/55" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
+          </div>
+        );
+      })}
 
       {/* centered content */}
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center sm:px-8">
@@ -336,7 +345,7 @@ function Portfolio({ onOpen }: { onOpen: (p: Project) => void }) {
           <button key={p.id} onClick={() => onOpen(p)}
             className="group relative overflow-hidden rounded-2xl border border-border bg-surface text-left transition-all hover:-translate-y-1 hover:border-[color:var(--gold)]/50 hover:shadow-glow-gold">
             <div className="relative aspect-[4/5] overflow-hidden bg-black">
-              <img src={p.image} alt={p.title} loading="lazy"
+              <img src={p.image} alt={p.title} loading="lazy" decoding="async"
                 className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
                 <span className="rounded-full bg-black/70 px-2.5 py-1 text-[10px] uppercase tracking-widest text-[color:var(--gold)] backdrop-blur">{p.category}</span>
@@ -378,7 +387,7 @@ function Lightbox({ p, onClose }: { p: Project | null; onClose: () => void }) {
         <button onClick={onClose} aria-label="Close" className="absolute right-3 top-3 z-10 grid size-10 place-items-center rounded-full bg-black/70 text-white hover:bg-[color:var(--gold)] hover:text-black">
           <X className="size-5" />
         </button>
-        <img src={p.image} alt={p.title} className="size-full max-h-[80vh] object-contain bg-black" />
+        <img src={p.image} alt={p.title} loading="lazy" decoding="async" className="size-full max-h-[80vh] object-contain bg-black" />
         <div className="space-y-5 p-8">
           <span className="rounded-full border border-[color:var(--gold)]/40 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[color:var(--gold)]">{p.category}</span>
           <h3 className="font-display text-3xl leading-tight sm:text-4xl">{p.title}</h3>
@@ -422,7 +431,7 @@ function Featured() {
       <SectionHeading eyebrow="Featured Case Study" title="Malay Mobile Legends" accent="Tournament" subtitle="A complete esports identity system: jersey, tournament marks, social assets and event collateral." />
       <div className="grid items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="overflow-hidden rounded-2xl border border-border bg-black">
-          <img src={p.image} alt={p.title} className="size-full object-cover" />
+          <img src={p.image} alt={p.title} loading="lazy" decoding="async" className="size-full object-cover" />
         </div>
         <div className="grid gap-4">
           {[
