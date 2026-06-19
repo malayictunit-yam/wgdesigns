@@ -144,23 +144,32 @@ function Hero() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* slides */}
-      {slides.map((s, idx) => (
-        <div
-          key={s.id}
-          className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${idx === i ? "opacity-100" : "opacity-0"}`}
-          aria-hidden={idx !== i}
-        >
-          <img
-            src={s.image}
-            alt={s.title}
-            className={`size-full object-cover ${idx === i ? "animate-hero-zoom" : ""}`}
-            loading={idx === 0 ? "eager" : "lazy"}
-          />
-          <div className="absolute inset-0 bg-black/55" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
-        </div>
-      ))}
+      {/* slides — only mount current + neighbors to avoid loading all hero images upfront */}
+      {slides.map((s, idx) => {
+        const isActive = idx === i;
+        const isNeighbor = idx === (i + 1) % n || idx === (i - 1 + n) % n;
+        const shouldRender = isActive || isNeighbor || idx === 0;
+        return (
+          <div
+            key={s.id}
+            className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${isActive ? "opacity-100" : "opacity-0"}`}
+            aria-hidden={!isActive}
+          >
+            {shouldRender && (
+              <img
+                src={s.image}
+                alt={s.title}
+                className={`size-full object-cover ${isActive ? "animate-hero-zoom" : ""}`}
+                loading={idx === 0 ? "eager" : "lazy"}
+                decoding={idx === 0 ? "sync" : "async"}
+                {...(idx === 0 ? { fetchPriority: "high" as const } : {})}
+              />
+            )}
+            <div className="absolute inset-0 bg-black/55" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
+          </div>
+        );
+      })}
 
       {/* centered content */}
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center sm:px-8">
